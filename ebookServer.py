@@ -16,16 +16,19 @@ app.secret_key = 'supersecretkey'
 
 # Directory where books are stored
 BOOKS_DIR = r'<path to ebook dir root>'  # The root directory containing book collections (subdirectories)
-ALLOWED_EXTENSIONS = {'.pdf', '.epub'}  # Allowed book extensions
+# The root directory containing book collections (subdirectories)
+ALLOWED_EXTENSIONS = {'.pdf', '.epub'}
 USER_DATA_FILE = 'users.json'
 
-# Ensure user data file exists
+# Ensure the user data file exists
 if not os.path.exists(USER_DATA_FILE):
     with open(USER_DATA_FILE, 'w') as file:
         json.dump({}, file)
 
+
 def allowed_file(filename):
     return '.' in filename and Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
+
 
 def get_directory_structure(directory: str):
     directories = []
@@ -37,19 +40,23 @@ def get_directory_structure(directory: str):
             files.append(entry.name)
     return directories, files
 
+
 def load_users():
     with open(USER_DATA_FILE, 'r') as file:
         return json.load(file)
 
+
 def save_users(users):
     with open(USER_DATA_FILE, 'w') as file:
         json.dump(users, file, indent=4)
+
 
 def is_authenticated():
     if 'user' not in session:
         flash('You need to be logged in to access the book collection.')
         return False
     return True
+
 
 def extract_cover_image(filepath):
     extension = Path(filepath).suffix.lower()
@@ -69,6 +76,7 @@ def extract_cover_image(filepath):
         if cover:
             return io.BytesIO(cover)
     return None  # No cover found
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -91,7 +99,56 @@ def signup():
         flash('Signup successful. Please log in.')
         return redirect(url_for('login'))
 
-    return render_template_string('''<h2>Signup</h2> <!-- Add your HTML form here -->''')
+    return render_template_string('''
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Signup</title>
+        <style>
+            body {
+                background-color: #2C2C2C;
+                color: #E5E5E5;
+                font-family: Arial, sans-serif;
+            }
+            input[type="text"], input[type="email"], input[type="password"] {
+                width: 100%;
+                padding: 8px;
+                margin: 8px 0;
+                box-sizing: border-box;
+                background-color: #444;
+                color: white;
+                border: none;
+            }
+            button, input[type="submit"] {
+                background-color: #444;
+                color: #E5E5E5;
+                border: none;
+                padding: 8px 16px;
+                cursor: pointer;
+            }
+            button:hover, input[type="submit"]:hover {
+                background-color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Signup</h2>
+        <form method="post">
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required><br>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" value="Signup">
+        </form>
+        <p>Already have an account? <a href="{{ url_for('login') }}" style="color:#00ffcc;">Login here</a>.</p>
+    </body>
+    </html>
+    ''')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -101,7 +158,8 @@ def login():
 
         users = load_users()
 
-        user = next((u for e, u in users.items() if e == email_or_username or u['username'] == email_or_username), None)
+        user = next((u for e, u in users.items() if e ==
+                    email_or_username or u['username'] == email_or_username), None)
 
         if user and check_password_hash(user['password'], password):
             session['user'] = user['username']
@@ -111,13 +169,61 @@ def login():
             flash('Invalid credentials. Please try again.')
             return redirect(url_for('login'))
 
-    return render_template_string('''<h2>Login</h2> <!-- Add your HTML form here -->''')
+    return render_template_string('''
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login</title>
+        <style>
+            body {
+                background-color: #2C2C2C;
+                color: #E5E5E5;
+                font-family: Arial, sans-serif;
+            }
+            input[type="text"], input[type="password"] {
+                width: 100%;
+                padding: 8px;
+                margin: 8px 0;
+                box-sizing: border-box;
+                background-color: #444;
+                color: white;
+                border: none;
+            }
+            button, input[type="submit"] {
+                background-color: #444;
+                color: #E5E5E5;
+                border: none;
+                padding: 8px 16px;
+                cursor: pointer;
+            }
+            button:hover, input[type="submit"]:hover {
+                background-color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Login</h2>
+        <form method="post">
+            <label for="email_or_username">Email or Username:</label><br>
+            <input type="text" id="email_or_username" name="email_or_username" required><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" value="Login">
+        </form>
+        <p>Don't have an account? <a href="{{ url_for('signup') }}" style="color:#00ffcc;">Sign up here</a>.</p>
+    </body>
+    </html>
+    ''')
+
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     flash('You have been logged out.')
     return redirect(url_for('login'))
+
 
 @app.route('/')
 @app.route('/<path:subpath>')
@@ -259,7 +365,7 @@ def index(subpath=""):
                     </a>
                 </div>
             </li>
-                        {% endfor %}
+            {% endfor %}
         </ul>
 
         <!-- Modal for displaying book covers in full screen -->
@@ -303,6 +409,7 @@ def index(subpath=""):
     </html>
     ''', directories=directories, files=files, subpath=subpath)
 
+
 @app.route('/upload/<path:subpath>', methods=['POST'])
 def upload_file(subpath):
     if not is_authenticated():
@@ -323,6 +430,7 @@ def upload_file(subpath):
     flash('Upload successful!')
     return redirect(url_for('index', subpath=subpath))
 
+
 @app.route('/books/<path:subpath>/<filename>')
 def serve_book(subpath, filename):
     if not is_authenticated():
@@ -330,6 +438,7 @@ def serve_book(subpath, filename):
 
     book_path = os.path.join(BOOKS_DIR, subpath)
     return send_from_directory(book_path, filename, as_attachment=True)
+
 
 @app.route('/cover/<path:subpath>/<filename>')
 def serve_cover(subpath, filename):
@@ -344,6 +453,7 @@ def serve_cover(subpath, filename):
     else:
         return send_from_directory('static', 'no_cover.png')
 
+
 @app.route('/download_dir/<path:subpath>')
 def download_directory(subpath):
     if not is_authenticated():
@@ -353,7 +463,8 @@ def download_directory(subpath):
     _, files = get_directory_structure(directory_path)
 
     # Create a list of download links for all files
-    download_links = [url_for('serve_book', subpath=subpath, filename=file) for file in files]
+    download_links = [
+        url_for('serve_book', subpath=subpath, filename=file) for file in files]
     return jsonify({"links": download_links})
 
 class DirectoryWatcher(FileSystemEventHandler):
@@ -377,10 +488,9 @@ def reload_ui():
 
 if __name__ == '__main__':
     observer = watch_directory(BOOKS_DIR, reload_ui)
-    
+
     try:
-        app.run(debug=True, port=8085)
+        app.run(debug=False, port=8085, host='0.0.0.0')
     finally:
         observer.stop()
         observer.join()
-
