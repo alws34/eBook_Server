@@ -24,10 +24,8 @@ if not os.path.exists(USER_DATA_FILE):
     with open(USER_DATA_FILE, 'w') as file:
         json.dump({}, file)
 
-
 def allowed_file(filename):
     return '.' in filename and Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
-
 
 def get_directory_structure(directory: str):
     directories = []
@@ -39,23 +37,19 @@ def get_directory_structure(directory: str):
             files.append(entry.name)
     return directories, files
 
-
 def load_users():
     with open(USER_DATA_FILE, 'r') as file:
         return json.load(file)
 
-
 def save_users(users):
     with open(USER_DATA_FILE, 'w') as file:
         json.dump(users, file, indent=4)
-
 
 def is_authenticated():
     if 'user' not in session:
         flash('You need to be logged in to access the book collection.')
         return False
     return True
-
 
 def extract_cover_image(filepath):
     extension = Path(filepath).suffix.lower()
@@ -75,7 +69,6 @@ def extract_cover_image(filepath):
         if cover:
             return io.BytesIO(cover)
     return None  # No cover found
-
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -100,7 +93,6 @@ def signup():
 
     return render_template_string('''<h2>Signup</h2> <!-- Add your HTML form here -->''')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -109,8 +101,7 @@ def login():
 
         users = load_users()
 
-        user = next((u for e, u in users.items() if e ==
-                    email_or_username or u['username'] == email_or_username), None)
+        user = next((u for e, u in users.items() if e == email_or_username or u['username'] == email_or_username), None)
 
         if user and check_password_hash(user['password'], password):
             session['user'] = user['username']
@@ -122,13 +113,11 @@ def login():
 
     return render_template_string('''<h2>Login</h2> <!-- Add your HTML form here -->''')
 
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     flash('You have been logged out.')
     return redirect(url_for('login'))
-
 
 @app.route('/')
 @app.route('/<path:subpath>')
@@ -314,7 +303,6 @@ def index(subpath=""):
     </html>
     ''', directories=directories, files=files, subpath=subpath)
 
-
 @app.route('/upload/<path:subpath>', methods=['POST'])
 def upload_file(subpath):
     if not is_authenticated():
@@ -335,7 +323,6 @@ def upload_file(subpath):
     flash('Upload successful!')
     return redirect(url_for('index', subpath=subpath))
 
-
 @app.route('/books/<path:subpath>/<filename>')
 def serve_book(subpath, filename):
     if not is_authenticated():
@@ -343,7 +330,6 @@ def serve_book(subpath, filename):
 
     book_path = os.path.join(BOOKS_DIR, subpath)
     return send_from_directory(book_path, filename, as_attachment=True)
-
 
 @app.route('/cover/<path:subpath>/<filename>')
 def serve_cover(subpath, filename):
@@ -358,7 +344,6 @@ def serve_cover(subpath, filename):
     else:
         return send_from_directory('static', 'no_cover.png')
 
-
 @app.route('/download_dir/<path:subpath>')
 def download_directory(subpath):
     if not is_authenticated():
@@ -368,10 +353,8 @@ def download_directory(subpath):
     _, files = get_directory_structure(directory_path)
 
     # Create a list of download links for all files
-    download_links = [
-        url_for('serve_book', subpath=subpath, filename=file) for file in files]
+    download_links = [url_for('serve_book', subpath=subpath, filename=file) for file in files]
     return jsonify({"links": download_links})
-
 
 class DirectoryWatcher(FileSystemEventHandler):
     def __init__(self, directory, callback):
@@ -382,7 +365,6 @@ class DirectoryWatcher(FileSystemEventHandler):
         if event.is_directory:
             self.callback()
 
-
 def watch_directory(directory, callback):
     event_handler = DirectoryWatcher(directory, callback)
     observer = Observer()
@@ -390,16 +372,15 @@ def watch_directory(directory, callback):
     observer.start()
     return observer
 
-
 def reload_ui():
     print('Directory changed, reloading UI...')
 
-
 if __name__ == '__main__':
     observer = watch_directory(BOOKS_DIR, reload_ui)
-
+    
     try:
         app.run(debug=True, port=8085)
     finally:
         observer.stop()
         observer.join()
+
