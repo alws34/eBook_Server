@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 # Directory where books are stored
-BOOKS_DIR = r'<path to ebook dir root>'  # The root directory containing book collections (subdirectories)
+BOOKS_DIR = os.environ.get('BOOKS_DIR', '/ebooks') 
 # The root directory containing book collections (subdirectories)
 ALLOWED_EXTENSIONS = {'.pdf', '.epub'}
 USER_DATA_FILE = 'users.json'

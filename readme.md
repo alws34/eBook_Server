@@ -3,4 +3,5 @@ This is a python server app that monitors a directory and gets all ebooks and pd
 You can than navigate through that directory (and sub dirs - same as in Explorer), upload a file to the current directory, or download a file, or download multiple files at once (the entire directory content - as single files)
 
 ## Setup
-Please change the `BOOKS_DIR` to the ROOT of your books directory. 
+Please change the `volumes` to the ROOT of your books directory in the docker-compose file. 
+

@@ -1,0 +1,6 @@
+Flask
+Werkzeug
+PyMuPDF
+Pillow
+EbookLib
+watchdog

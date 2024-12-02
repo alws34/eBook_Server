@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  ebook-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8085"  # Map host port 8083 to container port 8085
+    volumes:
+      - <Path to ebook here>:/ebooks # Mount the directory for book storage
+    environment:
+      - BOOKS_DIR=/ebooks
+    restart: unless-stopped
